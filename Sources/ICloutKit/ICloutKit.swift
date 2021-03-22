@@ -11,10 +11,20 @@ public struct ICloutKit {
     private let container: CKContainer
     private let database: CKDatabase
 
-    public init(containerID: String) {
+    public init(containerID: String, databaseType: DatabaseType) {
         let container = CKContainer(identifier: containerID)
         self.container = container
-        self.database = container.privateCloudDatabase
+        switch databaseType {
+        case .public: self.database = container.publicCloudDatabase
+        case .private: self.database = container.privateCloudDatabase
+        case .shared: self.database = container.sharedCloudDatabase
+        }
+    }
+
+    public enum DatabaseType {
+        case `public`
+        case shared
+        case `private`
     }
 
     public func save(_ record: CKRecord, completion: @escaping (Result<CKRecord, Error>) -> Void) {
