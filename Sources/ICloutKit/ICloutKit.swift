@@ -246,6 +246,7 @@ public struct ICloutKit {
             case .couldNotDetermine: completion(.failure(AccountErrors.accountStatusCouldNotDetermine))
             case .noAccount: completion(.failure(AccountErrors.accountStatusNoAccount))
             case .restricted: completion(.failure(AccountErrors.accountStatusRestricted))
+            case .temporarilyUnavailable: completion(.failure(AccountErrors.accountTemporarilyUnavailable))
             @unknown default: completion(.failure(AccountErrors.accountStatusUnknown))
             }
         }
@@ -278,6 +279,7 @@ public struct ICloutKit {
         case accountStatusNoAccount
         case accountStatusRestricted
         case accountStatusUnknown
+        case accountTemporarilyUnavailable
     }
 
     public enum CloudKitErrors: Error {
