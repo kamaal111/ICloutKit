@@ -95,6 +95,18 @@ public struct ICloutKit {
         }
     }
 
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func saveMultiple(_ records: [CKRecord]) async throws -> [CKRecord] {
+        return try await withCheckedThrowingContinuation { continuation in
+            saveMultiple(records) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        }
+    }
+
     public func delete(_ record: CKRecord, completion: @escaping (Result<CKRecord.ID, Error>) -> Void) {
         getAccountStatus { (result: Result<Bool, Error>) in
             switch result {
