@@ -7,10 +7,15 @@
 
 import CloudKit
 
+/// CloudKit helper
 public struct ICloutKit {
     private let container: CKContainer
     private let database: CKDatabase
 
+    /// Create an instance from the provided value.
+    /// - Parameters:
+    ///   - containerID: ID of the cloudkit container
+    ///   - databaseType: Access control of the container
     public init(containerID: String, databaseType: DatabaseType) {
         let container = CKContainer(identifier: containerID)
         self.container = container
@@ -21,13 +26,20 @@ public struct ICloutKit {
         }
     }
 
+    /// Access control of the container
     public enum DatabaseType {
         case `public`
         case shared
         case `private`
     }
 
-    public func save(_ record: CKRecord, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+    /// Save record to iCloud container
+    /// - Parameters:
+    ///   - record: Record to save
+    ///   - completion:
+    ///     - Success: The record to save, or nil if CloudKit can’t save the record.
+    ///     - Failure: An error if a problem occurs, or nil if CloudKit successfully saves the record.
+    public func save(_ record: CKRecord, completion: @escaping (Result<CKRecord?, Error>) -> Void) {
         getAccountStatus { (result: Result<Bool, Error>) in
             switch result {
             case .failure(let failure): completion(.failure(failure))
@@ -35,10 +47,6 @@ public struct ICloutKit {
                 database.save(record) { (record: CKRecord?, error: Error?) in
                     if let error = error {
                         completion(.failure(error))
-                        return
-                    }
-                    guard let record = record else {
-                        completion(.failure(Errors.recordMissing))
                         return
                     }
                     completion(.success(record))
@@ -238,6 +246,7 @@ public struct ICloutKit {
             case .couldNotDetermine: completion(.failure(AccountErrors.accountStatusCouldNotDetermine))
             case .noAccount: completion(.failure(AccountErrors.accountStatusNoAccount))
             case .restricted: completion(.failure(AccountErrors.accountStatusRestricted))
+            case .temporarilyUnavailable: completion(.failure(AccountErrors.accountTemporarilyUnavailable))
             @unknown default: completion(.failure(AccountErrors.accountStatusUnknown))
             }
         }
@@ -270,6 +279,7 @@ public struct ICloutKit {
         case accountStatusNoAccount
         case accountStatusRestricted
         case accountStatusUnknown
+        case accountTemporarilyUnavailable
     }
 
     public enum CloudKitErrors: Error {

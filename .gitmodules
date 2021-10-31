@@ -1,0 +1,6 @@
+[submodule "swift-docc-render"]
+	path = Scripts/GenerateDocumentation/swift-docc-render
+	url = git@github.com:apple/swift-docc-render.git
+[submodule "swift-docc"]
+	path = Scripts/GenerateDocumentation/swift-docc
+	url = git@github.com:apple/swift-docc.git
