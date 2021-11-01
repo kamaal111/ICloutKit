@@ -186,6 +186,18 @@ public struct ICloutKit {
         _subscribe(toType: objectType, by: predicate, completion: completion)
     }
 
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func subscribe(toType objectType: String, by predicate: NSPredicate) async throws -> CKSubscription {
+        return try await withCheckedThrowingContinuation({ continuation in
+            subscribe(toType: objectType, by: predicate) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
+    }
+
     public func fetchAllSubscriptions(completion: @escaping (Result<[CKSubscription], Error>) -> Void) {
         getAccountStatus { (result: Result<Bool, Error>) in
             switch result {
@@ -204,6 +216,18 @@ public struct ICloutKit {
                 }
             }
         }
+    }
+
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func fetchAllSubscriptions() async throws -> [CKSubscription] {
+        return try await withCheckedThrowingContinuation({ continuation in
+            fetchAllSubscriptions { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
     }
 
     public func fetch(ofType objectType: String,
