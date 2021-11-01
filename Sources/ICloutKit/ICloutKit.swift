@@ -236,6 +236,18 @@ public struct ICloutKit {
         _fetch(ofType: objectType, by: predicate, completion: completion)
     }
 
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func fetch(ofType objectType: String, by predicate: NSPredicate) async throws -> [CKRecord] {
+        return try await withCheckedThrowingContinuation({ continuation in
+            fetch(ofType: objectType, by: predicate) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
+    }
+
     public func fetchUserID(completion: @escaping (Result<String, Error>) -> Void) {
         getAccountStatus { (result: Result<Bool, Error>) in
             switch result {
@@ -254,6 +266,18 @@ public struct ICloutKit {
                 }
             }
         }
+    }
+
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func fetchUserID() async throws -> String {
+        return try await withCheckedThrowingContinuation({ continuation in
+            fetchUserID { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
     }
 
     private func _subscribe(toType objectType: String,
@@ -322,6 +346,18 @@ public struct ICloutKit {
             @unknown default: completion(.failure(AccountErrors.accountStatusUnknown))
             }
         }
+    }
+
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func getAccountStatus() async throws -> Bool {
+        return try await withCheckedThrowingContinuation({ continuation in
+            getAccountStatus { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
     }
 
     private func handleFetchAvailable(objectType: String,
