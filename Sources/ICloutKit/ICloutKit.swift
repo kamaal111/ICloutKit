@@ -7,58 +7,6 @@
 
 import CloudKit
 
-protocol CloutDatabasable {
-    var original: CKDatabase { get }
-
-    func save(_ record: CKRecord, completion: @escaping (_ record: CKRecord?, _ error: Error?) -> Void)
-}
-
-protocol CloutContainerable {
-    var publicCloudDatabase: CloutDatabasable { get }
-    var privateCloudDatabase: CloutDatabasable { get }
-    var sharedCloudDatabase: CloutDatabasable { get }
-}
-
-extension CKModifyRecordsOperation {
-    func setDatabase(enabled: Bool = true, database: CKDatabase?) {
-        if enabled, let database = database {
-            self.database = database
-        }
-    }
-}
-
-struct CloutDatabase: CloutDatabasable {
-    let original: CKDatabase
-
-    init(database: CKDatabase) {
-        self.original = database
-    }
-
-    func save(_ record: CKRecord, completion: @escaping (CKRecord?, Error?) -> Void) {
-        original.save(record, completionHandler: completion)
-    }
-}
-
-struct CloutContainer: CloutContainerable {
-    private let container: CKContainer
-
-    init(containerID: String) {
-        self.container = CKContainer(identifier: containerID)
-    }
-
-    var publicCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.publicCloudDatabase)
-    }
-
-    var privateCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.privateCloudDatabase)
-    }
-    
-    var sharedCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.sharedCloudDatabase)
-    }
-}
-
 /// CloudKit helper
 public struct ICloutKit {
     private let container: CloutContainerable
