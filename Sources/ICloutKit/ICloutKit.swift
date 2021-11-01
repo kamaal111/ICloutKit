@@ -127,6 +127,18 @@ public struct ICloutKit {
         }
     }
 
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func delete(_ record: CKRecord) async throws -> CKRecord.ID {
+        return try await withCheckedThrowingContinuation({ continuation in
+            delete(record) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
+    }
+
     public func deleteMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
         guard !records.isEmpty else {
             completion(.success(records))
@@ -154,6 +166,18 @@ public struct ICloutKit {
                 }
             }
         }
+    }
+
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func deleteMultiple(_ records: [CKRecord]) async throws -> [CKRecord] {
+        return try await withCheckedThrowingContinuation({ continuation in
+            deleteMultiple(records) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        })
     }
 
     public func subscribe(toType objectType: String,
