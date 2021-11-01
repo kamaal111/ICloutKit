@@ -7,6 +7,12 @@
 
 import CloudKit
 
+protocol CloutDatabasable {
+}
+
+protocol CloutContainerable {
+}
+
 /// CloudKit helper
 public struct ICloutKit {
     private let container: CKContainer
