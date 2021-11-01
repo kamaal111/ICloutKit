@@ -8,22 +8,68 @@
 import CloudKit
 
 protocol CloutDatabasable {
+    func save(_ record: CKRecord, completion: @escaping (_ record: CKRecord?, _ error: Error?) -> Void)
 }
 
 protocol CloutContainerable {
+    var publicCloudDatabase: CloutDatabasable { get }
+    var privateCloudDatabase: CloutDatabasable { get }
+    var sharedCloudDatabase: CloutDatabasable { get }
+}
+
+extension CKModifyRecordsOperation {
+    func setDatabase(enabled: Bool = true, database: CKDatabase?) {
+        if enabled, let database = database {
+            self.database = database
+        }
+    }
+}
+
+struct CloutDatabase: CloutDatabasable {
+
+    internal let database: CKDatabase
+
+    init(database: CKDatabase) {
+        self.database = database
+    }
+
+    func save(_ record: CKRecord, completion: @escaping (CKRecord?, Error?) -> Void) {
+        database.save(record, completionHandler: completion)
+    }
+}
+
+struct CloutContainer: CloutContainerable {
+
+    private let container: CKContainer
+
+    init(containerID: String) {
+        self.container = CKContainer(identifier: containerID)
+    }
+
+    var publicCloudDatabase: CloutDatabasable {
+        CloutDatabase(database: container.publicCloudDatabase)
+    }
+
+    var privateCloudDatabase: CloutDatabasable {
+        CloutDatabase(database: container.privateCloudDatabase)
+    }
+    
+    var sharedCloudDatabase: CloutDatabasable {
+        CloutDatabase(database: container.sharedCloudDatabase)
+    }
 }
 
 /// CloudKit helper
 public struct ICloutKit {
-    private let container: CKContainer
-    private let database: CKDatabase
+    private let container: CloutContainerable
+    private let database: CloutDatabasable
 
     /// Create an instance from the provided value.
     /// - Parameters:
     ///   - containerID: ID of the cloudkit container
     ///   - databaseType: Access control of the container
     public init(containerID: String, databaseType: DatabaseType) {
-        let container = CKContainer(identifier: containerID)
+        let container = CloutContainer(containerID: containerID)
         self.container = container
         switch databaseType {
         case .public: self.database = container.publicCloudDatabase
@@ -83,6 +129,7 @@ public struct ICloutKit {
             case .failure(let failure): completion(.failure(failure))
             case .success:
                 let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
+//                modification.setDatabase(enabled: , database: )
                 modification.database = database
                 let queue = OperationQueue()
                 queue.addOperations([modification], waitUntilFinished: false)
