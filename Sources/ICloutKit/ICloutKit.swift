@@ -8,6 +8,8 @@
 import CloudKit
 
 protocol CloutDatabasable {
+    var original: CKDatabase { get }
+
     func save(_ record: CKRecord, completion: @escaping (_ record: CKRecord?, _ error: Error?) -> Void)
 }
 
@@ -26,20 +28,18 @@ extension CKModifyRecordsOperation {
 }
 
 struct CloutDatabase: CloutDatabasable {
-
-    internal let database: CKDatabase
+    let original: CKDatabase
 
     init(database: CKDatabase) {
-        self.database = database
+        self.original = database
     }
 
     func save(_ record: CKRecord, completion: @escaping (CKRecord?, Error?) -> Void) {
-        database.save(record, completionHandler: completion)
+        original.save(record, completionHandler: completion)
     }
 }
 
 struct CloutContainer: CloutContainerable {
-
     private let container: CKContainer
 
     init(containerID: String) {
@@ -107,6 +107,9 @@ public struct ICloutKit {
         }
     }
 
+    /// Save record to iCloud container
+    /// - Parameter record: Record to save
+    /// - Returns: The record to save, or nil if CloudKit can’t save the record.
     @available(iOS 15.0.0, macOS 12.0.0, *)
     public func save(_ record: CKRecord) async throws -> CKRecord? {
         return try await withCheckedThrowingContinuation { continuation in
@@ -119,7 +122,32 @@ public struct ICloutKit {
         }
     }
 
+    /// Save multiple records to iCloud container
+    /// - Parameters:
+    ///   - records: Records to save
+    ///   - completion:
+    ///     - Success: The records that successfully have saved.
+    ///     - Failure: An error if a problem occurs, or nil if CloudKit successfully saves the record.
     public func saveMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
+        saveMultiple(records, enableModificatoin: true, completion: completion)
+    }
+
+    /// Save multiple records to iCloud container
+    /// - Parameter records: Records to save
+    /// - Returns: The records that successfully have saved.
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public func saveMultiple(_ records: [CKRecord]) async throws -> [CKRecord] {
+        return try await withCheckedThrowingContinuation { continuation in
+            saveMultiple(records) { result in
+                switch result {
+                case .failure(let failure): return continuation.resume(throwing: failure)
+                case .success(let success): return continuation.resume(returning: success)
+                }
+            }
+        }
+    }
+
+    func saveMultiple(_ records: [CKRecord], enableModificatoin: Bool, completion: @escaping (Result<[CKRecord], Error>) -> Void) {
         guard !records.isEmpty else {
             completion(.success(records))
             return
@@ -129,8 +157,7 @@ public struct ICloutKit {
             case .failure(let failure): completion(.failure(failure))
             case .success:
                 let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
-//                modification.setDatabase(enabled: , database: )
-                modification.database = database
+                modification.setDatabase(enabled: enableModificatoin, database: database.original)
                 let queue = OperationQueue()
                 queue.addOperations([modification], waitUntilFinished: false)
                 modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
@@ -143,18 +170,6 @@ public struct ICloutKit {
                         return
                     }
                     completion(.success(savedRecords))
-                }
-            }
-        }
-    }
-
-    @available(iOS 15.0.0, macOS 12.0.0, *)
-    public func saveMultiple(_ records: [CKRecord]) async throws -> [CKRecord] {
-        return try await withCheckedThrowingContinuation { continuation in
-            saveMultiple(records) { result in
-                switch result {
-                case .failure(let failure): return continuation.resume(throwing: failure)
-                case .success(let success): return continuation.resume(returning: success)
                 }
             }
         }
