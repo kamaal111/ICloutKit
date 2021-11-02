@@ -70,31 +70,34 @@ extension ICloutKit {
         }
     }
 
-    func saveMultiple(_ records: [CKRecord], enableModificatoin: Bool, completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        guard !records.isEmpty else {
-            completion(.success(records))
-            return
-        }
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
-                modification.setDatabase(enabled: enableModificatoin, database: database.original)
-                let queue = OperationQueue()
-                queue.addOperations([modification], waitUntilFinished: false)
-                modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
+    internal func saveMultiple(
+        _ records: [CKRecord],
+        enableModificatoin: Bool,
+        completion: @escaping (Result<[CKRecord], Error>) -> Void) {
+            guard !records.isEmpty else {
+                completion(.success(records))
+                return
+            }
+            getAccountStatus { (result: Result<Bool, Error>) in
+                switch result {
+                case .failure(let failure): completion(.failure(failure))
+                case .success:
+                    let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
+                    modification.setDatabase(enabled: enableModificatoin, database: database.original)
+                    let queue = OperationQueue()
+                    queue.addOperations([modification], waitUntilFinished: false)
+                    modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
+                        if let error = error {
+                            completion(.failure(error))
+                            return
+                        }
+                        guard let savedRecords = savedRecords else {
+                            completion(.failure(Errors.recordMissing))
+                            return
+                        }
+                        completion(.success(savedRecords))
                     }
-                    guard let savedRecords = savedRecords else {
-                        completion(.failure(Errors.recordMissing))
-                        return
-                    }
-                    completion(.success(savedRecords))
                 }
             }
-        }
     }
 }

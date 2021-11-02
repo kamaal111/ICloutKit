@@ -9,8 +9,8 @@ import CloudKit
 
 /// CloudKit helper
 public struct ICloutKit {
-    let container: CloutContainerable
-    let database: CloutDatabasable
+    internal let container: CloutContainerable
+    internal let database: CloutDatabasable
 
     /// Create an instance from the provided value.
     /// - Parameters:

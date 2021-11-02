@@ -17,4 +17,8 @@ struct CloutDatabase: CloutDatabasable {
     func save(_ record: CKRecord, completion: @escaping (CKRecord?, Error?) -> Void) {
         original.save(record, completionHandler: completion)
     }
+
+    func perform(_ query: CKQuery, inZoneWith zoneID: CKRecordZone.ID?, completionHandler: @escaping ([CKRecord]?, Error?) -> Void) {
+        original.perform(query, inZoneWith: zoneID, completionHandler: completionHandler)
+    }
 }
