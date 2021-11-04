@@ -21,4 +21,16 @@ struct CloutDatabase: CloutDatabasable {
     func perform(_ query: CKQuery, inZoneWith zoneID: CKRecordZone.ID?, completionHandler: @escaping ([CKRecord]?, Error?) -> Void) {
         original.perform(query, inZoneWith: zoneID, completionHandler: completionHandler)
     }
+
+    func fetchAllSubscriptions(completionHandler: @escaping ([CKSubscription]?, Error?) -> Void) {
+        original.fetchAllSubscriptions(completionHandler: completionHandler)
+    }
+
+    func save(_ subscription: CKSubscription, completionHandler: @escaping (CKSubscription?, Error?) -> Void) {
+        original.save(subscription, completionHandler: completionHandler)
+    }
+
+    func delete(withRecordID recordID: CKRecord.ID, completionHandler: @escaping (CKRecord.ID?, Error?) -> Void) {
+        original.delete(withRecordID: recordID, completionHandler: completionHandler)
+    }
 }

@@ -25,4 +25,12 @@ struct CloutContainer: CloutContainerable {
     var sharedCloudDatabase: CloutDatabasable {
         CloutDatabase(database: container.sharedCloudDatabase)
     }
+
+    func fetchUserRecordID(completionHandler: @escaping (CKRecord.ID?, Error?) -> Void) {
+        container.fetchUserRecordID(completionHandler: completionHandler)
+    }
+
+    func accountStatus(completionHandler: @escaping (CKAccountStatus, Error?) -> Void) {
+        container.accountStatus(completionHandler: completionHandler)
+    }
 }

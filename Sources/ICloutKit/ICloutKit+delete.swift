@@ -41,6 +41,10 @@ extension ICloutKit {
     }
 
     public func deleteMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
+        deleteMultiple(records, enableModification: true, completion: completion)
+    }
+
+    internal func deleteMultiple(_ records: [CKRecord], enableModification: Bool, completion: @escaping (Result<[CKRecord], Error>) -> Void) {
         guard !records.isEmpty else {
             completion(.success(records))
             return
@@ -51,7 +55,7 @@ extension ICloutKit {
             case .success:
                 let modification = CKModifyRecordsOperation(recordsToSave: nil,
                                                             recordIDsToDelete: records.map(\.recordID))
-                modification.database = database
+                modification.setDatabase(enabled: enableModification, database: database.original)
                 let queue = OperationQueue()
                 queue.addOperations([modification], waitUntilFinished: false)
                 modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in

@@ -52,7 +52,7 @@ extension ICloutKit {
     ///     - Success: The records that successfully have saved.
     ///     - Failure: An error if a problem occurs, or nil if CloudKit successfully saves the record.
     public func saveMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        saveMultiple(records, enableModificatoin: true, completion: completion)
+        saveMultiple(records, enableModification: true, completion: completion)
     }
 
     /// Save multiple records to iCloud container
@@ -72,7 +72,7 @@ extension ICloutKit {
 
     internal func saveMultiple(
         _ records: [CKRecord],
-        enableModificatoin: Bool,
+        enableModification: Bool,
         completion: @escaping (Result<[CKRecord], Error>) -> Void) {
             guard !records.isEmpty else {
                 completion(.success(records))
@@ -83,7 +83,7 @@ extension ICloutKit {
                 case .failure(let failure): completion(.failure(failure))
                 case .success:
                     let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
-                    modification.setDatabase(enabled: enableModificatoin, database: database.original)
+                    modification.setDatabase(enabled: enableModification, database: database.original)
                     let queue = OperationQueue()
                     queue.addOperations([modification], waitUntilFinished: false)
                     modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
