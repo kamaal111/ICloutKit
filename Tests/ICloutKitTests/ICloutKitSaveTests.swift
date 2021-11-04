@@ -12,7 +12,7 @@ import CloudKit
 final class ICloutKitSaveTests: XCTestCase {
     func testExample() {
         let container = TestContainer()
-        let iCloutKit = ICloutKit(container: container, database: TestDatabase(original: container.original.publicCloudDatabase))
+        let _ = ICloutKit(container: container, database: TestDatabase(original: container.original.publicCloudDatabase))
         XCTAssertEqual(true, true)
     }
 }
