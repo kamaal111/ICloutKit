@@ -26,6 +26,11 @@ public struct ICloutKit {
         }
     }
 
+    internal init(container: CloutContainerable, database: CloutDatabasable) {
+        self.container = container
+        self.database = database
+    }
+
     /// Access control of the container
     public enum DatabaseType {
         case `public`
