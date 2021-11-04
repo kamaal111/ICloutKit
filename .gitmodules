@@ -4,3 +4,6 @@
 [submodule "swift-docc"]
 	path = Scripts/GenerateDocumentation/swift-docc
 	url = git@github.com:apple/swift-docc.git
+[submodule "swift-docc"]
+	path = Scripts/swiftlint_checker
+	url = git@github.com:kamaal111/swiftlint_checker.git

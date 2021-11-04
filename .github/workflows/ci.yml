@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches:
+      - develop
+      - "release/**"
+      - "feature/**"
+
+jobs:
+  quality:
+    name: Quality
+    timeout-minutes: 5
+    runs-on: macos-latest
+    steps:
+      - name: Git - Checkout
+        uses: actions/checkout@v2
+
+      - name: Swift lint
+        run: |
+          python3 Scripts/swiftlint_checker/main.py
+
+  test:
+    name: Test
+    timeout-minutes: 15
+    runs-on: macos-latest
+    needs: [quality]
+    steps:
+      - name: Git - Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup - Xcode
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_13.0.app/Contents/Developer
+
+      - name: Test
+        run: |
+          swift test
