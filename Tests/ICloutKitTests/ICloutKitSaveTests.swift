@@ -11,27 +11,29 @@ import CloudKit
 
 final class ICloutKitSaveTests: XCTestCase {
     func testExample() {
+        let container = TestContainer()
+        let iCloutKit = ICloutKit(container: container, database: TestDatabase(original: container.original.publicCloudDatabase))
         XCTAssertEqual(true, true)
     }
 }
 
 struct TestContainer: CloutContainerable {
-    private let container: CKContainer
+    let original: CKContainer
 
     init() {
-        self.container = CKContainer(identifier: "does not exist")
+        self.original = CKContainer(identifier: "does not exist")
     }
 
     var publicCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.publicCloudDatabase)
+        CloutDatabase(database: original.publicCloudDatabase)
     }
 
     var privateCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.privateCloudDatabase)
+        CloutDatabase(database: original.privateCloudDatabase)
     }
 
     var sharedCloudDatabase: CloutDatabasable {
-        CloutDatabase(database: container.sharedCloudDatabase)
+        CloutDatabase(database: original.sharedCloudDatabase)
     }
 
     func fetchUserRecordID(completionHandler: @escaping (CKRecord.ID?, Error?) -> Void) {
