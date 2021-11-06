@@ -9,15 +9,15 @@ import CloudKit
 
 /// CloudKit helper
 public struct ICloutKit {
-    private let container: CKContainer
-    private let database: CKDatabase
+    internal let container: CloutContainerable
+    internal let database: CloutDatabasable
 
     /// Create an instance from the provided value.
     /// - Parameters:
     ///   - containerID: ID of the cloudkit container
     ///   - databaseType: Access control of the container
     public init(containerID: String, databaseType: DatabaseType) {
-        let container = CKContainer(identifier: containerID)
+        let container = CloutContainer(containerID: containerID)
         self.container = container
         switch databaseType {
         case .public: self.database = container.publicCloudDatabase
@@ -26,247 +26,16 @@ public struct ICloutKit {
         }
     }
 
+    internal init(container: CloutContainerable, database: CloutDatabasable) {
+        self.container = container
+        self.database = database
+    }
+
     /// Access control of the container
     public enum DatabaseType {
         case `public`
         case shared
         case `private`
-    }
-
-    /// Save record to iCloud container
-    /// - Parameters:
-    ///   - record: Record to save
-    ///   - completion:
-    ///     - Success: The record to save, or nil if CloudKit can’t save the record.
-    ///     - Failure: An error if a problem occurs, or nil if CloudKit successfully saves the record.
-    public func save(_ record: CKRecord, completion: @escaping (Result<CKRecord?, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                database.save(record) { (record: CKRecord?, error: Error?) in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    completion(.success(record))
-                }
-            }
-        }
-    }
-
-    public func saveMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        guard !records.isEmpty else {
-            completion(.success(records))
-            return
-        }
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                let modification = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
-                modification.database = database
-                let queue = OperationQueue()
-                queue.addOperations([modification], waitUntilFinished: false)
-                modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let savedRecords = savedRecords else {
-                        completion(.failure(Errors.recordMissing))
-                        return
-                    }
-                    completion(.success(savedRecords))
-                }
-            }
-        }
-    }
-
-    public func delete(_ record: CKRecord, completion: @escaping (Result<CKRecord.ID, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                database.delete(withRecordID: record.recordID) { (recordID: CKRecord.ID?, error: Error?) in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let recordID = recordID else {
-                        completion(.failure(Errors.recordMissing))
-                        return
-                    }
-                    completion(.success(recordID))
-                }
-            }
-        }
-    }
-
-    public func deleteMultiple(_ records: [CKRecord], completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        guard !records.isEmpty else {
-            completion(.success(records))
-            return
-        }
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                let modification = CKModifyRecordsOperation(recordsToSave: nil,
-                                                            recordIDsToDelete: records.map(\.recordID))
-                modification.database = database
-                let queue = OperationQueue()
-                queue.addOperations([modification], waitUntilFinished: false)
-                modification.modifyRecordsCompletionBlock = { (savedRecords, _, error)  in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let savedRecords = savedRecords else {
-                        completion(.failure(Errors.recordMissing))
-                        return
-                    }
-                    completion(.success(savedRecords))
-                }
-            }
-        }
-    }
-
-    public func subscribe(toType objectType: String,
-                          by predicate: NSPredicate,
-                          completion: @escaping (Result<CKSubscription, Error>) -> Void) {
-        _subscribe(toType: objectType, by: predicate, completion: completion)
-    }
-
-    public func fetchAllSubscriptions(completion: @escaping (Result<[CKSubscription], Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                database.fetchAllSubscriptions { (subscriptions: [CKSubscription]?, error: Error?) in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let subscriptions = subscriptions else {
-                        completion(.failure(Errors.subscriptionMissing))
-                        return
-                    }
-                    completion(.success(subscriptions))
-                }
-            }
-        }
-    }
-
-    public func fetch(ofType objectType: String,
-                      by predicate: NSPredicate,
-                      completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        _fetch(ofType: objectType, by: predicate, completion: completion)
-    }
-
-    public func fetchUserID(completion: @escaping (Result<String, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                container.fetchUserRecordID { (recordID: CKRecord.ID?, error: Error?) in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let recordID = recordID else {
-                        completion(.failure(Errors.recordMissing))
-                        return
-                    }
-                    completion(.success(recordID.recordName))
-                }
-            }
-        }
-    }
-
-    private func _subscribe(toType objectType: String,
-                            by predicate: NSPredicate,
-                            completion: @escaping (Result<CKSubscription, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success:
-                let subscriptionOptions: CKQuerySubscription.Options = [
-                    .firesOnRecordCreation,
-                    .firesOnRecordDeletion,
-                    .firesOnRecordUpdate
-                ]
-                let subscriptionQuery = CKQuerySubscription(recordType: objectType,
-                                                            predicate: predicate,
-                                                            options: subscriptionOptions)
-
-                let notification = CKSubscription.NotificationInfo()
-                notification.shouldSendContentAvailable = true
-                subscriptionQuery.notificationInfo = notification
-
-                database.save(subscriptionQuery) { (subscription: CKSubscription?, error: Error?) in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-                    guard let subscription = subscription else {
-                        completion(.failure(Errors.subscriptionMissing))
-                        return
-                    }
-                    completion(.success(subscription))
-                }
-            }
-        }
-    }
-
-    private func _fetch(ofType objectType: String,
-                        by predicate: NSPredicate,
-                        completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
-            switch result {
-            case .failure(let failure): completion(.failure(failure))
-            case .success: handleFetchAvailable(objectType: objectType, predicate: predicate, completion: completion)
-            }
-        }
-    }
-
-    public func getAccountStatus(completion: @escaping (Result<Bool, Error>) -> Void) {
-        container.accountStatus { (status: CKAccountStatus, error: Error?) in
-            if let error = error as? CKError {
-                switch error.code {
-                case .notAuthenticated: completion(.failure(CloudKitErrors.cloudKitNotAuthenticated))
-                case .networkFailure, .networkUnavailable: completion(.failure(CloudKitErrors.cloudKitNetworkError))
-                case .quotaExceeded: completion(.failure(CloudKitErrors.cloudKitQuotaExeded))
-                default: completion(.failure(error))
-                }
-                return
-            }
-            switch status {
-            case .available: completion(.success(true))
-            case .couldNotDetermine: completion(.failure(AccountErrors.accountStatusCouldNotDetermine))
-            case .noAccount: completion(.failure(AccountErrors.accountStatusNoAccount))
-            case .restricted: completion(.failure(AccountErrors.accountStatusRestricted))
-            case .temporarilyUnavailable: completion(.failure(AccountErrors.accountTemporarilyUnavailable))
-            @unknown default: completion(.failure(AccountErrors.accountStatusUnknown))
-            }
-        }
-    }
-
-    private func handleFetchAvailable(objectType: String,
-                                      predicate: NSPredicate,
-                                      completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        let query = CKQuery(recordType: objectType, predicate: predicate)
-        database.perform(query, inZoneWith: .default) { (records: [CKRecord]?, error: Error?) in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            guard let records = records else {
-                completion(.failure(Errors.recordMissing))
-                return
-            }
-            completion(.success(records))
-        }
     }
 
     public enum Errors: Error {
