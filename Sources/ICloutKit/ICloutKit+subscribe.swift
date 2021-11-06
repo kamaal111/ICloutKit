@@ -27,7 +27,7 @@ extension ICloutKit {
     }
 
     public func fetchAllSubscriptions(completion: @escaping (Result<[CKSubscription], Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:
@@ -61,7 +61,7 @@ extension ICloutKit {
     private func _subscribe(toType objectType: String,
                             by predicate: NSPredicate,
                             completion: @escaping (Result<CKSubscription, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:

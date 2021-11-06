@@ -9,7 +9,7 @@ import CloudKit
 
 extension ICloutKit {
     public func delete(_ record: CKRecord, completion: @escaping (Result<CKRecord.ID, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:
@@ -49,7 +49,7 @@ extension ICloutKit {
             completion(.success(records))
             return
         }
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:

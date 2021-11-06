@@ -9,7 +9,7 @@ import CloudKit
 
 extension ICloutKit {
     public func fetchUserID(completion: @escaping (Result<String, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:
@@ -40,7 +40,7 @@ extension ICloutKit {
         })
     }
 
-    public func getAccountStatus(completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func getAccountStatus(completion: @escaping (Result<Void, Error>) -> Void) {
         container.accountStatus { (status: CKAccountStatus, error: Error?) in
             if let error = error as? CKError {
                 switch error.code {
@@ -52,7 +52,7 @@ extension ICloutKit {
                 return
             }
             switch status {
-            case .available: completion(.success(true))
+            case .available: completion(.success(Void()))
             case .couldNotDetermine: completion(.failure(AccountErrors.accountStatusCouldNotDetermine))
             case .noAccount: completion(.failure(AccountErrors.accountStatusNoAccount))
             case .restricted: completion(.failure(AccountErrors.accountStatusRestricted))
@@ -63,7 +63,7 @@ extension ICloutKit {
     }
 
     @available(iOS 15.0.0, macOS 12.0.0, *)
-    public func getAccountStatus() async throws -> Bool {
+    public func getAccountStatus() async throws {
         return try await withCheckedThrowingContinuation({ continuation in
             getAccountStatus { result in
                 switch result {

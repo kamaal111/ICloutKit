@@ -15,7 +15,7 @@ extension ICloutKit {
     ///     - Success: The record to save, or nil if CloudKit can’t save the record.
     ///     - Failure: An error if a problem occurs, or nil if CloudKit successfully saves the record.
     public func save(_ record: CKRecord, completion: @escaping (Result<CKRecord?, Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success:
@@ -78,7 +78,7 @@ extension ICloutKit {
                 completion(.success(records))
                 return
             }
-            getAccountStatus { (result: Result<Bool, Error>) in
+            getAccountStatus { result in
                 switch result {
                 case .failure(let failure): completion(.failure(failure))
                 case .success:

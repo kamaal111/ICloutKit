@@ -29,7 +29,7 @@ extension ICloutKit {
     private func _fetch(ofType objectType: String,
                         by predicate: NSPredicate,
                         completion: @escaping (Result<[CKRecord], Error>) -> Void) {
-        getAccountStatus { (result: Result<Bool, Error>) in
+        getAccountStatus { result in
             switch result {
             case .failure(let failure): completion(.failure(failure))
             case .success: handleFetchAvailable(objectType: objectType, predicate: predicate, completion: completion)
