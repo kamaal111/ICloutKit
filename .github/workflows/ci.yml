@@ -14,9 +14,9 @@ jobs:
     steps:
       - name: Git - Checkout
         uses: actions/checkout@v2
-
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
+        with:
+          ref: ${{ github.ref }}
+          submodules: recursive
 
       - name: Swift lint
         run: |
