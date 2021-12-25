@@ -14,7 +14,7 @@ extension ICloutKit {
         _subscribe(toType: objectType, by: predicate, completion: completion)
     }
 
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func subscribe(toType objectType: String, by predicate: NSPredicate) async throws -> CKSubscription {
         return try await withCheckedThrowingContinuation({ continuation in
             subscribe(toType: objectType, by: predicate) { result in
@@ -46,7 +46,7 @@ extension ICloutKit {
         }
     }
 
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func fetchAllSubscriptions() async throws -> [CKSubscription] {
         return try await withCheckedThrowingContinuation({ continuation in
             fetchAllSubscriptions { result in
