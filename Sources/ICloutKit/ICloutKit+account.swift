@@ -28,7 +28,7 @@ extension ICloutKit {
         }
     }
 
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func fetchUserID() async throws -> String {
         return try await withCheckedThrowingContinuation({ continuation in
             fetchUserID { result in
@@ -62,7 +62,7 @@ extension ICloutKit {
         }
     }
 
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func getAccountStatus() async throws {
         return try await withCheckedThrowingContinuation({ continuation in
             getAccountStatus { result in

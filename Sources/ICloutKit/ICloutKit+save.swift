@@ -33,7 +33,7 @@ extension ICloutKit {
     /// Save record to iCloud container
     /// - Parameter record: Record to save
     /// - Returns: The record to save, or nil if CloudKit can’t save the record.
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func save(_ record: CKRecord) async throws -> CKRecord? {
         return try await withCheckedThrowingContinuation { continuation in
             save(record) { result in
@@ -58,7 +58,7 @@ extension ICloutKit {
     /// Save multiple records to iCloud container
     /// - Parameter records: Records to save
     /// - Returns: The records that successfully have saved.
-    @available(iOS 15.0.0, macOS 12.0.0, *)
+    @available(iOS 13.0.0, macOS 10.15.0, *)
     public func saveMultiple(_ records: [CKRecord]) async throws -> [CKRecord] {
         return try await withCheckedThrowingContinuation { continuation in
             saveMultiple(records) { result in
