@@ -33,4 +33,8 @@ struct CloutDatabase: CloutDatabasable {
     func delete(withRecordID recordID: CKRecord.ID, completionHandler: @escaping (CKRecord.ID?, Error?) -> Void) {
         original.delete(withRecordID: recordID, completionHandler: completionHandler)
     }
+
+    func add(operation: CKDatabaseOperation) {
+        original.add(operation)
+    }
 }
