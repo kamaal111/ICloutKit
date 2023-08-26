@@ -15,4 +15,5 @@ protocol CloutDatabasable {
     func fetchAllSubscriptions(completionHandler: @escaping ([CKSubscription]?, Error?) -> Void)
     func save(_ subscription: CKSubscription, completionHandler: @escaping (CKSubscription?, Error?) -> Void)
     func delete(withRecordID recordID: CKRecord.ID, completionHandler: @escaping (CKRecord.ID?, Error?) -> Void)
+    func add(operation: CKDatabaseOperation) -> Void
 }
